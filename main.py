@@ -1,6 +1,6 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
-from my_lib.summarize import load_model_and_tokenizer, summarize_large_text
+from my_lib.summarize import load_model_and_tokenizer, summarize_text
 from typing import Tuple
 import torch
 
@@ -30,7 +30,7 @@ async def summarize_api(request: TextRequest):
 
     try:
         # Summarize large text by processing paragraph by paragraph
-        summary = summarize_large_text(request.text, tokenizer, model)
+        summary = summarize_text(request.text, tokenizer, model)
         return {"summary": summary}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error during summarization: {str(e)}")
