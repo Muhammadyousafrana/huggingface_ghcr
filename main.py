@@ -1,32 +1,36 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
-from my_lib.summarize import summarize, detect_language_code
+from my_lib.summarize import load_model_and_tokenizer, summarize_large_text
+from typing import Tuple
+import torch
 
-# Initialize FastAPI app
 app = FastAPI()
 
+# Global variables for model and tokenizer
+tokenizer = None
+model = None
 
-# Define input request model
 class TextRequest(BaseModel):
     text: str
 
+@app.on_event("startup")
+async def startup_event():
+    global tokenizer, model
+    tokenizer, model = load_model_and_tokenizer()
+    print("Model and tokenizer loaded successfully.")
+
 @app.get("/")
 async def root():
-    """Root endpoint to check if the API is running."""
-    return {"message": "Welcome to the Transcription API. Use /summarize to upload and process files."}
+    return {"message": "Welcome to the Summarization API. Use /summarize to summarize text."}
 
-
-# API Endpoint for Summarization
 @app.post("/summarize")
-async def summarize_text(request: TextRequest):
-    text = request.text
-    if not text.strip():
+async def summarize_api(request: TextRequest):
+    if not request.text.strip():
         raise HTTPException(status_code=400, detail="Text cannot be empty")
 
-    # # Detect language
-    # src_lang = detect_language_code(text)
-    # tgt_lang = "en_XX" if src_lang != "en_XX" else "en_XX"  # default to English summary
-
-    # Generate summary
-    summary = summarize(text)
-    return {"summary": summary}
+    try:
+        # Summarize large text by processing paragraph by paragraph
+        summary = summarize_large_text(request.text, tokenizer, model)
+        return {"summary": summary}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error during summarization: {str(e)}")

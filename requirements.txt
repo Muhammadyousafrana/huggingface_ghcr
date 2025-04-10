@@ -1,7 +1,7 @@
+uvicorn[standard]
+gunicorn
 fastapi
-uvicorn
 transformers
 torch
-sentencepiece
-langdetect
-protobuf
+python-multipart
+pydantic
