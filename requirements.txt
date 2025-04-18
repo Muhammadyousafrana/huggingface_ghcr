@@ -1,7 +1,8 @@
 uvicorn[standard]
 gunicorn
 fastapi
+tf-keras
 transformers
-tensorflow
+torch
 python-multipart
 pydantic
